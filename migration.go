@@ -69,11 +69,11 @@ func (this Migration) DownFiles(dir string) (files []string, err error) {
 
 func (this Migration) MigrationUp(db *sql.DB) {
 	files, _ := this.UpFiles("./migrations/up/")
-	fmt.Println("Executando migrations UP.")
+	fmt.Println("Performing UP migrations.")
 	for _, n := range files {
 		fmt.Printf("%s\n", n)
-		if verificarRegistro(db, n) {
-			fmt.Println("Migration já executado.")
+		if checkExist(db, n) {
+			fmt.Println("Migration already exists.")
 			continue
 		}
 		query, err := ioutil.ReadFile(n)
@@ -95,16 +95,16 @@ func (this Migration) MigrationUp(db *sql.DB) {
 		}
 		registrarMigration(n, db)
 	}
-	fmt.Println("Migrations UPs executados com sucesso.")
+	fmt.Println("Migrations UPs executed successfully.")
 }
 
 func (this Migration) MigrationDown(db *sql.DB) {
 	files, _ := this.DownFiles("./migrations/down/")
-	fmt.Println("Executando migrations DOWN.")
+	fmt.Println("Performing DOWN migrations.")
 	for _, n := range files {
 		fmt.Printf("%s", n)
-		if verificarRegistro(db, n) {
-			fmt.Println("Registro já cadastrado.")
+		if checkExist(db, n) {
+			fmt.Println("Migration already exists.")
 			continue
 		}
 		query, err := ioutil.ReadFile(n)
@@ -126,9 +126,7 @@ func (this Migration) MigrationDown(db *sql.DB) {
 		}
 		registrarMigration(n, db)
 	}
-
-	fmt.Println("Migrations Down executados com sucesso.")
-
+	fmt.Println("Migrations DOWNs executed successfully.")
 }
 
 func registrarMigration(migration string, db *sql.DB) {
@@ -148,11 +146,9 @@ func registrarMigration(migration string, db *sql.DB) {
 	}
 }
 
-func verificarRegistro(db *sql.DB, migration string) bool {
-
+func checkExist(db *sql.DB, migration string) bool {
 	re := regexp.MustCompile("_(.*?).up")
 	descricaoMigration := re.FindStringSubmatch(migration)
-
 	var count bool
 	_ = db.QueryRow("SELECT (SELECT COUNT(*) FROM migrations WHERE description = ?) > 0", descricaoMigration[1]).Scan(&count)
 
@@ -161,15 +157,12 @@ func verificarRegistro(db *sql.DB, migration string) bool {
 
 func (this Migration) MigrationList(db *sql.DB) {
 
-	fmt.Println("Listando Migrations")
-
+	fmt.Println("Listing Migrations")
 	results, err := db.Query("SELECT id, description, created_at FROM migrations")
 	if err != nil {
 		panic(err.Error())
 	}
-
 	var migration Migration
-
 	for results.Next() {
 		err = results.Scan(&migration.Id, &migration.Descricao, &migration.Created_at)
 		if err != nil {
@@ -183,9 +176,7 @@ func (this Migration) MigrationList(db *sql.DB) {
 }
 
 func Str2Date(data string) (ret time.Time) {
-
 	loc, _ := time.LoadLocation("America/Sao_Paulo")
-
 	ret, err := time.ParseInLocation("20060102150405", data, loc)
 
 	if err != nil {
