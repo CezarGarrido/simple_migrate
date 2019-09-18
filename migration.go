@@ -30,16 +30,12 @@ func NewMigration(db *sql.DB) {
 	switch *comandos {
 	case "init":
 		InitTable(db)
-		os.Exit(3)
 	case "up":
 		migrate.MigrationUp(db)
-		os.Exit(3)
 	case "down":
 		migrate.MigrationDown(db)
-		os.Exit(3)
 	case "list":
 		migrate.MigrationList(db)
-		os.Exit(3)
 	}
 }
 
