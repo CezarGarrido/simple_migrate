@@ -1,4 +1,4 @@
-package projudMigration
+package simple_migrate
 
 import (
 	"database/sql"
