@@ -12,8 +12,6 @@ import (
 	"strings"
 	"text/tabwriter"
 	"time"
-
-	_ "github.com/go-sql-driver/mysql"
 )
 
 type Migration struct {
