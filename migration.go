@@ -27,6 +27,13 @@ func NewMigration(db *sql.DB) {
 	createCommand := flag.String("migration:create", "", "")
 	flag.Parse()
 
+	if comandos != nil {
+		err := createMigrationDir()
+		if err != nil {
+			fmt.Println(err.Error())
+			return
+		}
+	}
 	migrate := Migration{}
 	switch *comandos {
 	case "init":
@@ -39,8 +46,13 @@ func NewMigration(db *sql.DB) {
 		migrate.MigrationList(db)
 	}
 	if createCommand != nil {
+		err := createMigrationDir()
+		if err != nil {
+			fmt.Println(err.Error())
+			return
+		}
 		fmt.Println("Creating migration", *createCommand)
-		err := createFileMigration(*createCommand)
+		err = createFileMigration(*createCommand)
 		if err != nil {
 			fmt.Println(err.Error())
 			return
@@ -59,6 +71,24 @@ func InitTable(db *sql.DB) error {
 	if _, err := db.Exec(sql); err != nil {
 		return err
 	}
+	return nil
+}
+func fileExists(filename string) bool {
+	info, err := os.Stat(filename)
+	if os.IsNotExist(err) {
+		return false
+	}
+	return !info.IsDir()
+}
+func createMigrationDir() error {
+	if !fileExists("./migrations/up") {
+		os.MkdirAll("./migrations/up", os.ModePerm)
+	}
+
+	if !fileExists("./migrations/down") {
+		os.MkdirAll("./migrations/down", os.ModePerm)
+	}
+
 	return nil
 }
 

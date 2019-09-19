@@ -9,11 +9,10 @@ A simple golang migration manager, database/sql
 
 ```
    go get github.com/CezarGarrido/simple_migrate
-
 ```
 ## Usage
 
-Example mysql: go run -migration=up
+Example new create file migration mysql: go run main.go -migration:create=create-users
 
 ```go
 package main
@@ -38,13 +37,20 @@ func main() {
 	db, err := sql.Open("mysql", dbSource)
 	if err != nil {
 		panic(err)
-	}
+  }
+  
   migrate.NewMigration(db)
-
-  //code
 }
 
 ```
+
+## Commands
+| Command | Description |
+| --- | --- |
+| `-migration:create` | Create *new* file migration |
+| `-migration=up` | Run migrations paste up |
+| `-migration=down` | Run migrations paste down |
+
 ## Authors
 Cezar Garrido Britez  
 [@CezarCgb18](https://twitter.com/CezarCgb18)
