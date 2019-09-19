@@ -17,13 +17,14 @@ import (
 )
 
 type Migration struct {
-	Id         int64
-	Descricao  string
-	Created_at *time.Time
+	Id          int64
+	Description string
+	Created_at  *time.Time
 }
 
 func NewMigration(db *sql.DB) {
 	comandos := flag.String("migration", "", "")
+	createCommand := flag.String("migration:create", "", "")
 	flag.Parse()
 
 	migrate := Migration{}
@@ -36,6 +37,14 @@ func NewMigration(db *sql.DB) {
 		migrate.MigrationDown(db)
 	case "list":
 		migrate.MigrationList(db)
+	}
+	if createCommand != nil {
+		fmt.Println("Creating migration", *createCommand)
+		err := createFileMigration(*createCommand)
+		if err != nil {
+			fmt.Println(err.Error())
+			return
+		}
 	}
 }
 
@@ -50,6 +59,16 @@ func InitTable(db *sql.DB) error {
 	if _, err := db.Exec(sql); err != nil {
 		return err
 	}
+	return nil
+}
+
+func createFileMigration(name string) error {
+	f, err := os.Create("./migrations/up/" + time.Now().Format("20060102150405") + "_" + name + ".up.sql")
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+
 	return nil
 }
 
@@ -89,7 +108,7 @@ func (this Migration) MigrationUp(db *sql.DB) {
 			}
 
 		}
-		registrarMigration(n, db)
+		registerMigration(n, db)
 	}
 	fmt.Println("Migrations UPs executed successfully.")
 }
@@ -120,18 +139,18 @@ func (this Migration) MigrationDown(db *sql.DB) {
 				panic(err.Error())
 			}
 		}
-		registrarMigration(n, db)
+		registerMigration(n, db)
 	}
 	fmt.Println("Migrations DOWNs executed successfully.")
 }
 
-func registrarMigration(migration string, db *sql.DB) {
+func registerMigration(migration string, db *sql.DB) {
 	data := regexp.MustCompile(`\d{4}\d{2}\d{2}\d{2}\d{2}\d{2}`)
 	submatchall := data.FindAllString(migration, -1)
 	re := regexp.MustCompile("_(.*?).up")
 	descricaoMigration := re.FindStringSubmatch(migration)
 	for _, element := range submatchall {
-		dataRegistro := Str2Date(element)
+		dataRegistro := str2Date(element)
 		db, err := db.Prepare("INSERT INTO migrations(description, created_at) VALUES(?,?)")
 		if err != nil {
 			panic(err.Error())
@@ -160,21 +179,19 @@ func (this Migration) MigrationList(db *sql.DB) {
 	}
 	var migration Migration
 	for results.Next() {
-		err = results.Scan(&migration.Id, &migration.Descricao, &migration.Created_at)
+		err = results.Scan(&migration.Id, &migration.Description, &migration.Created_at)
 		if err != nil {
 			panic(err.Error())
 		}
 		const padding = 3
 		w := tabwriter.NewWriter(os.Stdout, 22, 0, padding, '-', tabwriter.Debug)
-		fmt.Fprintln(w, strconv.FormatInt(migration.Id, 10)+"\t"+migration.Descricao+"\t"+migration.Created_at.Format("2006/01/06"))
+		fmt.Fprintln(w, strconv.FormatInt(migration.Id, 10)+"\t"+migration.Description+"\t"+migration.Created_at.Format("2006/01/06"))
 		w.Flush()
 	}
 }
 
-func Str2Date(data string) (ret time.Time) {
-	loc, _ := time.LoadLocation("America/Sao_Paulo")
-	ret, err := time.ParseInLocation("20060102150405", data, loc)
-
+func str2Date(data string) (ret time.Time) {
+	ret, err := time.Parse("20060102150405", data)
 	if err != nil {
 		fmt.Println(err.Error())
 	}
