@@ -47,7 +47,7 @@ func main() {
 ## Commands
 | Command | Description |
 | --- | --- |
-| `-migration:create` | Create *new* file migration |
+| `-migration=create {my-migration-name}` | Create *new* file migration |
 | `-migration=up` | Run migrations paste up |
 | `-migration=down` | Run migrations paste down |
 
