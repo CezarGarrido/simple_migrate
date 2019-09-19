@@ -24,9 +24,7 @@ type Migration struct {
 
 func NewMigration(db *sql.DB) {
 	comandos := flag.String("migration", "", "")
-	createCommand := flag.String("migration:create", "", "")
 	flag.Parse()
-
 	if comandos != nil {
 		err := createMigrationDir()
 		if err != nil {
@@ -44,18 +42,13 @@ func NewMigration(db *sql.DB) {
 		migrate.MigrationDown(db)
 	case "list":
 		migrate.MigrationList(db)
-	}
-	if createCommand != nil {
-		err := createMigrationDir()
-		if err != nil {
-			fmt.Println(err.Error())
-			return
-		}
-		fmt.Println("Creating migration", *createCommand)
-		err = createFileMigration(*createCommand)
-		if err != nil {
-			fmt.Println(err.Error())
-			return
+	case "create":
+		for _, name := range flag.Args() {
+			err := createFileMigration(name)
+			if err != nil {
+				fmt.Println(err.Error())
+				return
+			}
 		}
 	}
 }
@@ -93,6 +86,7 @@ func createMigrationDir() error {
 }
 
 func createFileMigration(name string) error {
+	fmt.Println("Creating migration file", name)
 	f, err := os.Create("./migrations/up/" + time.Now().Format("20060102150405") + "_" + name + ".up.sql")
 	if err != nil {
 		return err
