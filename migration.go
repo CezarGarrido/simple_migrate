@@ -36,12 +36,16 @@ func NewMigration(db *sql.DB) {
 	switch *comandos {
 	case "init":
 		InitTable(db)
+		os.Exit(1)
 	case "up":
 		migrate.MigrationUp(db)
+		os.Exit(1)
 	case "down":
 		migrate.MigrationDown(db)
+		os.Exit(1)
 	case "list":
 		migrate.MigrationList(db)
+		os.Exit(1)
 	case "create":
 		for _, name := range flag.Args() {
 			err := createFileMigration(name)
@@ -50,6 +54,7 @@ func NewMigration(db *sql.DB) {
 				return
 			}
 		}
+		os.Exit(1)
 	}
 }
 
