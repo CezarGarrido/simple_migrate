@@ -12,7 +12,7 @@ A simple golang migration manager, database/sql
 ```
 ## Usage
 
-Example new create file migration mysql: go run main.go -migration:create=create-users
+Example new create file migration mysql: go run main.go -migration=create create-users
 
 ```go
 package main
